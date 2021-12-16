@@ -1,0 +1,71 @@
+# Source: https://wiki.seeedstudio.com/Grove-GSR_Sensor/
+# Code edited by our Team
+
+import math
+import sys
+import time
+from grove.adc import ADC
+from pandas import DataFrame
+import numpy as np
+ 
+ 
+class GroveGSRSensor:
+ 
+    def __init__(self, channel):
+        self.channel = channel
+        self.adc = ADC()
+ 
+    @property
+    def GSR(self):
+        value = self.adc.read(self.channel)
+        return value
+ 
+Grove = GroveGSRSensor
+ 
+ 
+def main():
+    if len(sys.argv) < 2:
+        print('Usage: {} adc_channel'.format(sys.argv[0]))
+        sys.exit(1)
+ 
+    sensor = GroveGSRSensor(int(sys.argv[1]))
+    
+    print('Next 2 fill by yourself\n')
+    name = input('First name: ').capitalize()
+    second_name = input('First letter of second name: ').upper()
+    print('Thank you\n')
+    time.sleep(1)
+    samples_period = float(input('Samples period: '))
+    num = int(input('Dokonaj wyboru:\n(0) - czas\n(1) - ilosc probek\nTwoja odpowiedz: '))
+    
+    if num == 0:
+        measurment_time = int(input('Measurment time [s]: '))
+        samples = measurment_time/samples_period
+    elif num == 1:
+        samples = int(input('Number of samples: '))
+        
+
+    
+    if (samples * samples_period) > 60:
+        print('Time of processing: ', (samples * samples_period)/60, ' minutes.')
+    else:
+        print('Time of processing: ', (samples * samples_period), ' seconds.')
+          
+    print('Detecting...')
+    
+    result = []
+    i = 0
+    
+    while i <= samples:
+        print('GSR value: {0}'.format(sensor.GSR))
+        result.append(sensor.GSR)
+        i = i + 1
+        time.sleep(samples_period)
+    
+    gsr_result_array = np.array(result)[:,np.newaxis]
+    data = DataFrame(gsr_result_array, columns = ['gsr'])
+    path = '/home/pi/grove.py/grove/a_gsr_' + name + second_name + '_' + str(int(samples)) +'.csv'
+    data.to_csv(path)
+ 
+if __name__ == '__main__':
+    main()
